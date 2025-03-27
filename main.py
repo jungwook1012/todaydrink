@@ -1,10 +1,21 @@
-# app/main.py
-from fastapi import FastAPI
-from app.api.v1.api_v1 import api_router
+# load_api/main.py
 
-app = FastAPI(
-    title="회식 장소 추천 API",
-    version="1.0.0",
+from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
+from load_api.naver_place_loader import search_places_from_naver
+
+app = FastAPI()
+
+# Flutter 연동을 위한 CORS 허용
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-app.include_router(api_router, prefix="/api/v1")
+@app.get("/search")
+def search_places(query: str = Query(..., description="검색어 예: '안국역 맛집'")):
+    results = search_places_from_naver(query)
+    return {"results": results}
